@@ -8,10 +8,26 @@ import chess.piece.Rook;
 
 public class ChessMath {
 
+	private int turn;
 	private Board board;
+	private Color currentPlayer;
+
+	public int getTurn() {
+		return turn;
+	}
+
+	public Board getBoard() {
+		return board;
+	}
+
+	public Color getCurrentPlayer() {
+		return currentPlayer;
+	}
 
 	public ChessMath() {
 		board = new Board(8, 8);
+		turn = 1;
+		currentPlayer = Color.WHITE;
 		initialSetup();
 	}
 
@@ -24,8 +40,8 @@ public class ChessMath {
 		}
 		return mat;
 	}
-	
-	public boolean[][]possibleMovies(ChessPosition sourcePosition){
+
+	public boolean[][] possibleMovies(ChessPosition sourcePosition) {
 		Position position = sourcePosition.toPosition();
 		validateSourcePosition(position);
 		return board.piece(position).possibleMoves();
@@ -35,8 +51,9 @@ public class ChessMath {
 		Position source = sourcePosition.toPosition();
 		Position target = targetPosition.toPosition();
 		validateSourcePosition(source);
-		validateTargetPosition(source,target);
+		validateTargetPosition(source, target);
 		Piece capturePiece = makeMove(source, target);
+		nextTurn();
 		return (ChessPiece) capturePiece;
 	}
 
@@ -51,15 +68,23 @@ public class ChessMath {
 		if (!board.thereIsAPiece(position)) {
 			throw new ChessException("Não existe peça na posição declarada");
 		}
+		if(currentPlayer != ((ChessPiece)board.piece(position)).getColor()) {
+			throw new ChessException("Vez do adiversario");
+		}
 		if (!board.piece(position).isThereAnyPossibleMove()) {
 			throw new ChessException("Nao existe movimentos para peça escolhida");
 		}
 	}
-	
+
 	private void validateTargetPosition(Position source, Position target) {
-		if(!board.piece(source).possibleMove(target)) {
+		if (!board.piece(source).possibleMove(target)) {
 			throw new ChessException("A peca escolhida nao pode se mover para o destino");
-			}
+		}
+	}
+	
+	private void nextTurn() {
+		turn++;
+		currentPlayer = (currentPlayer == Color.WHITE) ? Color.BLACK : Color.WHITE;
 	}
 
 	private void placeNewPiece(char column, int row, ChessPiece piece) {
